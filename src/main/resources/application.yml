@@ -1,0 +1,35 @@
+server:
+  port: 8080
+  servlet:
+    context-path: springboot-mq
+
+spring:
+  rabbitmq:
+    host: 172.168.1.1
+    port: 5672
+    username: admin
+    password: admin
+    virtual-host: imooc-news
+    # 确认消息已发送到交换机
+      # none：表示禁用发送方确认机制
+      # correlated：表示开启发送方确认机制
+      # simple：表示开启发送方确认机制，并支持 waitForConfirms() 和 waitForConfirmsOrDie() 的调用。
+    publisher-confirm-type: correlated
+    # 确认消息从交换机中到队列中
+    publisher-returns: true
+    template:
+      # mandatory 分为 true 失败后返回客户端 和 false 失败后自动删除两种策略
+      mandatory: true     # 消息投递失败返回客户端
+    listener:
+      simple:
+        acknowledge-mode: manual  # 开启手动确认消费机制
+        prefetch: 10              #消费端每次拉去10条数据，直到确认消费完毕才拉去下10条
+        retry:
+          enabled: true # 开启消费者失败重试
+          initial-interval: 5000ms # 第一次和第二次尝试发布或传递消息之间的间隔
+          multiplier: 1  # 失败的等待时长倍数（下次等待时长 = multiplier * 上次等待时间）
+          max-attempts: 3 # 最大重试次数
+          max-interval: 1000ms  #最大重试时间间隔
+          stateless: true # true无状态；false有状态（如果业务中包含事务，这里改为false）
+
+

@@ -1,0 +1,46 @@
+1.产生死信消息的原因
+    当我们在消费消息时，如果队列里的消息出现以下情况，那么该消息将成为一条死信消息：
+    1、当一条消息被使用 channel.basicNack方法 或 channel.basicReject方法所nack响应 ，并且此时requeue 属性被设置为false。
+    2、消息在队列的存活时间超过设置的生存时间（TTL)时间。
+        两个方式，一个是在发送消息是设置ttl时间，一个是在队列参数中配置ttl时间
+        前者是指定单个消息的过期时间。而后者是指定整个队列中所有消息的超时时间。
+    3、消息队列的消息数量超过了设置的最大队列长度。
+        只有处于ready状态（在RabbitMQ中，消息有2种状态：ready 和 unacked）的消息被计数，
+        未被确认的消息不会被计数受到limit的限制。
+
+2.消息头变化
+一条消息变为死信消息之后，其Header中会有一些额外的参数。
+    1.x-first-death-exchange
+    第一次成为死信之前的交换机的名称。
+
+    2.x-first-death-reason
+    第一次成为死信的原因。
+        rejected：由于default-requeue-rejected 参数被设置为false，消息在重新进入队列时被拒绝。
+        expired ：消息的存活时间超过了设置的过期时间。
+        maxlen ： 队列内消息数量超过队列最大容量。
+        delivery_limit：消息返回的次数超过了限制（通过仲裁队列的策略参数delivery-limit设置）。
+
+    3.x-first-death-queue
+    第一次成为死信之前的队列的名称。
+
+    4.x-death
+    历次被投入死信交换机的信息列表，同一个消息每次进入一个死信交换机，这个数组的信息就会被更新。
+
+[
+    {
+      "reason": "rejected",
+      "count": 1,
+      "exchange": "business.exchange",
+      "time": 1669478090000,
+      "routing-keys": [
+        "rk.001"
+      ],
+      "queue": "business.queue"
+    }
+]
+
+
+
+
+附录：
+《RabbitMQ系列》之RabbitMQ的死信队列 https://zhuanlan.zhihu.com/p/582787597?utm_id=0

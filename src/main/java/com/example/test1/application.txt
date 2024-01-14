@@ -1,0 +1,56 @@
+spring:
+  rabbitmq:
+    host: 172.168.1.1
+    port: 5672
+    username: admin
+    password: admin
+    virtual-host: imooc-news
+    # 确认消息已发送到交换机
+      # none：表示禁用发送方确认机制
+      # correlated：表示开启发送方确认机制
+      # simple：表示开启发送方确认机制，并支持 waitForConfirms() 和 waitForConfirmsOrDie() 的调用。
+    publisher-confirm-type: correlated
+    # 确认消息从交换机中到队列中
+    publisher-returns: true
+    template:
+      # mandatory 分为 true 失败后返回客户端 和 false 失败后自动删除两种策略
+      mandatory: true     # 消息投递失败返回客户端
+    listener:
+      simple:
+        acknowledge-mode: manual  # 开启手动确认消费机制
+        prefetch: 10              #消费端每次拉去10条数据，直到确认消费完毕才拉去下10条
+        retry:
+          enabled: true # 开启消费者失败重试
+          initial-interval: 5000ms # 第一次和第二次尝试发布或传递消息之间的间隔
+          multiplier: 1  # 失败的等待时长倍数（下次等待时长 = multiplier * 上次等待时间）
+          max-attempts: 3 # 最大重试次数
+          max-interval: 1000ms  #最大重试时间间隔
+          stateless: true # true无状态；false有状态（如果业务中包含事务，这里改为false）
+
+# 其他配置：
+# 开启rabbit初始化重试机制
+spring.rabbitmq.template.retry.enabled: true
+## 最大重试间隔时间
+spring.rabbitmq.template.retry.max-interval: 1000ms
+## 最大重试次数
+spring.rabbitmq.template.retry.max-attempts: 3
+# 间隔乘数
+spring.rabbitmq.template.retry.multiplier: 1
+# 初始化的时间间隔
+spring.rabbitmq.template.retry.initial-interval: 1000ms
+
+
+
+#异常重试机制设置[未加死信队列 五次异常后 直接抛弃了]
+#设置是否重回队列 true即出现异常会将消息重新发送到队列中
+spring.rabbitmq.listener.simple.default-requeue-rejected=true
+#设置是否启用消息重试机制，默认为false。
+spring.rabbitmq.listener.simple.retry.enabled=true
+#设置消息重试的最大次数，默认为3。
+spring.rabbitmq.listener.simple.retry.max-attempts=5
+#设置消息重试的初始间隔时间，默认为1000ms。
+spring.rabbitmq.listener.simple.retry.initial-interval=2000ms
+#设置消息重试的时间间隔倍数，默认为1(重试时间越来越长)
+spring.rabbitmq.listener.simple.retry.multiplier=1.2
+##设置消息重试的最大时间间隔，默认为10000ms。
+spring.rabbitmq.listener.simple.retry.max-interval=3000m

@@ -1,0 +1,50 @@
+生产者：
+server:
+  port: 8080
+spring:
+  application:
+    name: mq-rabbitmq-producer
+  #rabbitmq配置
+  rabbitmq:
+    host: localhost
+    port: 5672
+    #注意：guest用户只能链接本地服务器 比如localhost  不可以连接远程服务器
+    username: guest
+    password: guest
+    #虚拟主机 一台机器可能有很多虚拟主机 这里选择默认配置 / 即可
+    virtual-host: /
+    #支持发布返回
+    publisher-returns: true
+    listener:
+      # Routing 路由模型（交换机类型：direct）
+      direct:
+        #消息确认：手动签收
+        acknowledge-mode: manual
+        #当前监听容器数
+        concurrency: 1
+        #最大数
+        max-concurrency: 10
+        #是否支持重试
+        retry:
+          enabled: true
+          #重试次数5,超过5次抛出异常
+          max-attempts: 5
+          #重试间隔 3s
+          max-interval: 3000
+
+
+消费者：
+server:
+  port: 8083
+spring:
+  application:
+    name: mq-rabbitmq-consumer
+  #rabbitmq配置
+  rabbitmq:
+    host: localhost
+    port: 5672
+    #注意：guest用户只能链接本地服务器 比如localhost  不可以连接远程服务器
+    username: guest
+    password: guest
+    #虚拟主机 一台机器可能有很多虚拟主机 这里选择默认配置 / 即可
+    virtual-host: /
